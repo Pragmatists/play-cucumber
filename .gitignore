@@ -8,3 +8,4 @@ dist
 commands.pyc
 .idea
 *.iml
+lib
