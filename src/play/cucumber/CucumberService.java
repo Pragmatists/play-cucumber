@@ -35,19 +35,12 @@ import cucumber.runtime.model.CucumberFeature;
 public class CucumberService {
 
 	public static List<CucumberFeature> loadFeatures() {
-		FileResourceLoader resourceLoader = new FileResourceLoader();
-		List<CucumberFeature> features = Collections.emptyList();
-		try {
-			features = CucumberFeature.load(resourceLoader, asList("features"), emptyList());
-		} catch (CucumberException e) {
-			// nothing to do when no features found
-		}
-		return features;
+        return CucumberFeature.load(new FileResourceLoader(), asList("features"), emptyList());
 	}
 
 	public static CucumberFeature findFeatureByUri(String uri) {
 		for (CucumberFeature feature : loadFeatures()) {
-			if (uri.equals(feature.getUri())) {
+			if (uri.equals(feature.getPath())) {
 				return feature;
 			}
 		}
@@ -62,16 +55,16 @@ public class CucumberService {
 		ArrayList<RunResult> runResults = new ArrayList<RunResult>();
 		int maxLength = 0;
 		for (CucumberFeature feature : features) {
-			if (feature.getUri().length() > maxLength) {
-				maxLength = feature.getUri().length();
+			if (feature.getPath().length() > maxLength) {
+				maxLength = feature.getPath().length();
 			}
 		}
 		boolean dryRun = false;
 		for (CucumberFeature feature : features) {
 			Formatter jUnitFormatter = createJUnitFormatter(feature);
 			RunResult runResult = runFeature(feature, dryRun, jUnitFormatter);
-			consoleStream.print("~ " + feature.getUri() + " : ");
-			for (int i = 0; i < maxLength - feature.getUri().length(); i++) {
+			consoleStream.print("~ " + feature.getPath() + " : ");
+			for (int i = 0; i < maxLength - feature.getPath().length(); i++) {
 				consoleStream.print(" ");
 			}
 			if (runResult.passed) {
@@ -99,27 +92,24 @@ public class CucumberService {
 	private final static String CUCUMBER_RESULT_PATH = "test-result/cucumber/";
 
 	private static RunResult runFeature(CucumberFeature cucumberFeature, boolean dryRun, Formatter... formatters) {
-		Properties properties = Play.configuration;
-		RuntimeOptions runtimeOptions = new RuntimeOptions(properties);
 
-		// Remove the progress formater (because it closes the default output
-		// stream)
-		for (Formatter formatter : runtimeOptions.formatters) {
-			if (formatter.getClass().getSimpleName().equals("ProgressFormatter")) {
-				runtimeOptions.formatters.remove(formatter);
-				break;
-			}
-		}
+		RuntimeOptions runtimeOptions = new RuntimeOptions(createOptions(dryRun, CUCUMBER_RESULT_PATH));
 
-		// Configure Runtime
-		runtimeOptions.dryRun = dryRun;
-		runtimeOptions.dotCucumber = Play.getFile(CUCUMBER_RESULT_PATH);
+//		// Remove the progress formater (because it closes the default output
+//		// stream)
+//		for (Formatter formatter : runtimeOptions.formatters) {
+//			if (formatter.getClass().getSimpleName().equals("ProgressFormatter")) {
+//				runtimeOptions.formatters.remove(formatter);
+//				break;
+//			}
+//		}
+
 		// StringWriter prettyWriter = null;
 		// prettyWriter = addPrettyFormatter(runtimeOptions);
 		addPrettyFormatter(runtimeOptions);
 		StringWriter jsonWriter = addJSONFormatter(runtimeOptions);
 		for (Formatter formatter : formatters) {
-			runtimeOptions.formatters.add(formatter);
+			runtimeOptions.addFormatter(formatter);
 		}
 		// Exec Feature
 		final ClassLoader classLoader = Play.classloader;
@@ -137,7 +127,7 @@ public class CucumberService {
 		formatter.close();
 
 		// Serialize the execution Result
-		File targetFile = Play.getFile(CUCUMBER_RESULT_PATH + cucumberFeature.getUri() + ".html");
+		File targetFile = Play.getFile(CUCUMBER_RESULT_PATH + cucumberFeature.getPath() + ".html");
 		createDirectory(targetFile.getParentFile());
 		List<ErrorDetail> errorDetails = buildErrors(runtime.getErrors());
 		Template template = play.templates.TemplateLoader.load("Cucumber/runFeature.html");
@@ -155,7 +145,12 @@ public class CucumberService {
 																										 */, errorDetails, runtime.getSnippets());
 	}
 
-	private static void addPrettyFormatter(RuntimeOptions runtimeOptions) {
+    private static List<String> createOptions(boolean dryRun, String dotCucumber) {
+        return asList("--dry-run", ""+dryRun,
+                "--dotcucumber", dotCucumber);
+    }
+
+    private static void addPrettyFormatter(RuntimeOptions runtimeOptions) {
 		// StringWriter prettyWriter = new StringWriter();
 		Appendable consoleStream = new Appendable() {
 			@Override
@@ -199,7 +194,7 @@ public class CucumberService {
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
 		}
-		runtimeOptions.formatters.add(prettyFormatter);
+		runtimeOptions.addFormatter(prettyFormatter);
 		// return prettyWriter;
 	}
 
@@ -209,19 +204,19 @@ public class CucumberService {
 		// JSONPrettyFormatter jsonFormatter = new
 		// JSONPrettyFormatter(jsonWriter);
 		Formatter jsonFormatter = new CustomJSONFormatter(jsonWriter);
-		runtimeOptions.formatters.add(jsonFormatter);
+		runtimeOptions.addFormatter(jsonFormatter);
 		return jsonWriter;
 	}
 	
 	private static Formatter createJUnitFormatter(CucumberFeature cucumberFeature) {
-		String reportFileName = escapeSlashAndBackSlash(cucumberFeature.getUri())+"-junit-report.xml";
+		String reportFileName = escapeSlashAndBackSlash(cucumberFeature.getPath())+"-junit-report.xml";
 		Play.getFile(CUCUMBER_RESULT_PATH).mkdir();
 		Formatter junitFormatter = new CustomJUnitFormatter(Play.getFile(CUCUMBER_RESULT_PATH + reportFileName));
 		return junitFormatter;
 	}
 	
 	private static String escapeSlashAndBackSlash(String s){
-		return s.replaceAll("\\\\","_").replaceAll("/","_");
+		return s.replaceAll("\\\\","_").replaceAll("/", "_");
 	}
 
 	/*

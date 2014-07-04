@@ -86,7 +86,12 @@ public class CustomJUnitFormatter implements Formatter, Reporter {
 			testCase.steps.add(step);
 	}
 
-	@Override
+    @Override
+    public void endOfScenarioLifeCycle(Scenario scenario) {
+
+    }
+
+    @Override
 	public void done() {
 		try {
 			// set up a transformer
@@ -149,7 +154,12 @@ public class CustomJUnitFormatter implements Formatter, Reporter {
 		TestCase.examples = examples.getRows().size() - 1;
 	}
 
-	@Override
+    @Override
+    public void startOfScenarioLifeCycle(Scenario scenario) {
+
+    }
+
+    @Override
 	public void match(Match match) {
 	}
 

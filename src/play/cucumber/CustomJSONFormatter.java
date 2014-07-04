@@ -71,8 +71,18 @@ public class CustomJSONFormatter implements Reporter, Formatter {
     }
 
     @Override
+    public void startOfScenarioLifeCycle(Scenario scenario) {
+
+    }
+
+    @Override
     public void step(Step step) {
     	getSteps().add(step.toMap());
+    }
+
+    @Override
+    public void endOfScenarioLifeCycle(Scenario scenario) {
+
     }
 
     @Override
