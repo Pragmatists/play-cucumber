@@ -3,13 +3,8 @@ import sys
 import os
 import subprocess
 import shutil
-import getopt
 import urllib2
-import webbrowser
 import time
-import signal
-
-from play.utils import *
 
 MODULE = 'cucumber'
 
@@ -88,15 +83,14 @@ def cukes(app, args):
         proxy_handler = urllib2.ProxyHandler({})
         opener = urllib2.build_opener(proxy_handler)
         print "~ Run Cukes: "+(protocol + '://localhost:%s/@cukes/run.cli' % http_port)
+        time.sleep(2)
         result = opener.open(protocol + '://localhost:%s/@cukes/run.cli' % http_port)
         print result.read()
     except Exception, e:
         print e        
         pass
         
-    #time.sleep(1)
-        
-    # Kill if exists    
+    # Kill if exists
     try:
         proxy_handler = urllib2.ProxyHandler({})
         opener = urllib2.build_opener(proxy_handler)
