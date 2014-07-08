@@ -14,12 +14,12 @@ import cucumber.runtime.model.CucumberFeature;
 public class Cucumber extends Controller {
 
 	public static void index() {
-		List<CucumberFeature> features = CucumberService.loadFeatures();
+		List<CucumberFeature> features = new CucumberService().loadFeatures();
 		render(features);
 	}
 
 	public static void showFeature(String uri) {		
-		CucumberFeature feature = CucumberService.findFeatureByUri(uri);		
+		CucumberFeature feature = new CucumberService().findFeatureByUri(uri);
 		render(feature);
 	}
 
@@ -31,21 +31,21 @@ public class Cucumber extends Controller {
 	public static void runAllFromCommandLine() {
 		PrintStream stream = new PrintStream(response.out);
 		long start = System.currentTimeMillis();
-		CucumberService.runAllFeatures(stream);
+		new CucumberService().runAllFeatures(stream);
 		printElapsedTime(start, stream);	
 	}
 	
 	public static void runAll() {		
 		PrintStream stream = System.out;
 		long start = System.currentTimeMillis();
-		List<RunResult> runResults = CucumberService.runAllFeatures(stream);
+		List<RunResult> runResults = new CucumberService().runAllFeatures(stream);
 		printElapsedTime(start, stream);
 		render(runResults);
 	}
 
 	public static void runFeature(String uri) {		
 		long start = System.currentTimeMillis();
-		CucumberService.runFeature(uri);
+		new CucumberService().runFeature(uri);
 		printElapsedTime(start, System.out);
 		showFeatureExecResult(uri);
 	}
