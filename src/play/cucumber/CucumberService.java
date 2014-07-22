@@ -11,7 +11,6 @@ import gherkin.formatter.Formatter;
 import gherkin.formatter.Reporter;
 import play.Play;
 import play.classloading.ApplicationClasses.ApplicationClass;
-import play.cucumber.formatters.FormattersFactory;
 import play.libs.IO;
 import play.templates.Template;
 
@@ -91,7 +90,7 @@ public class CucumberService {
     }
 
     private RuntimeOptions prepareRuntimeOptions(Formatter[] formatters) {
-        RuntimeOptions runtimeOptions = new RuntimeOptions(createOptions(CUCUMBER_RESULT_PATH));
+        RuntimeOptions runtimeOptions = new RuntimeOptions(createOptions());
         runtimeOptions.addFormatter(createConsolePrettyFormatter());
         jsonWriter = addJSONFormatter(runtimeOptions);
         for (Formatter formatter : formatters) {
@@ -119,8 +118,8 @@ public class CucumberService {
                 errorDetails, execFeature.getRuntime().getSnippets());
     }
 
-    private List<String> createOptions(String resultPath) {
-        return asList("--dotcucumber", resultPath);
+    private List<String> createOptions() {
+        return asList("--dotcucumber", ".cucumber");
     }
 
     private StringWriter addJSONFormatter(RuntimeOptions runtimeOptions) {
