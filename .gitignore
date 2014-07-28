@@ -9,3 +9,4 @@ commands.pyc
 .idea
 *.iml
 lib
+package

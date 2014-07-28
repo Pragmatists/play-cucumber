@@ -1,7 +1,5 @@
-self: play -> cucumber 0.3
+self: play -> cucumber 0.3.1
 
 require:
     - play    
     - info.cukes -> cucumber-java 1.1.8
-    - info.cukes -> cucumber-spring 1.1.8
-
