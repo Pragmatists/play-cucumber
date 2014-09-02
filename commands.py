@@ -98,7 +98,7 @@ def cukes(app, args):
     except Exception, e:
         pass
   
-    sys.exit(1)
+    sys.exit(0)
         
 # This will be executed before any command (new, run...)
 def before(**kargs):
